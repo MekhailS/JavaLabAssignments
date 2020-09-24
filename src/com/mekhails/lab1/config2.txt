@@ -1,0 +1,3 @@
+input file: src/com/mekhails/lab1/files_for_testing/reversed.txt
+output file: src/com/mekhails/lab1/files_for_testing/re-reversed.txt
+buffer size: 10
