@@ -1,4 +1,4 @@
-package com.mekhails.main;
+package com.mekhails.lab1;
 
 import java.io.*;
 
