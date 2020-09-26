@@ -8,82 +8,70 @@ import java.io.IOException;
 public class ConfigReader
 {
 
+    final static String delimiter = ":";
+    final static int numParameters = 3;
+
     enum Vocabulary
     {
-        INPUT_FILE("input file"),
-        OUTPUT_FILE("output file"),
-        BUFFER_SIZE("buffer size"),
-        DELIMITER(":");
+        INPUT_FILE("input file", 0),
+        OUTPUT_FILE("output file", 1),
+        BUFFER_SIZE("buffer size", 2);
 
-        Vocabulary(String str) { name = str;}
+        Vocabulary(String str, int i_) { name = str; i = i_;}
 
-        private String name;
+        public final String name;
+        public final int i;
     }
 
     public ConfigReader(String configFilename_s)
     {
         configFilename = configFilename_s;
-        readConfig();
     }
 
-    public String getConfigFilename()
-    {
+    public String getConfigFilename() {
         return configFilename;
     }
 
-    public String getInputFilename()
-    {
-        return inputFilename;
-    }
-
-    public String getOutputFilename()
-    {
-        return outputFilename;
-    }
-
-    public int getBufferSize()
-    {
-        return bufferSize;
-    }
-
-    private void readConfig()
+    public String[] readConfig()
     {
         try
         {
+            String[] params = new String[numParameters];
+
             BufferedReader bufR = new BufferedReader(new FileReader(configFilename));
 
             for (String line = bufR.readLine(); line != null; line = bufR.readLine())
             {
-                String[] tokens = line.split(Vocabulary.DELIMITER.name);
+                String[] tokens = line.split(delimiter);
 
-                if (tokens.length != 2)
-                    throw new Exception("Not correct config line format");
+                if (tokens.length != 2) {
+                    System.out.println("Error: Not correct config line format");
+                    return null;
+                }
 
-                for (int i = 0; i< tokens.length; i++)
+                for (int i = 0; i < tokens.length; i++)
                 {
                     String curToken = tokens[i].trim();
 
                     if (curToken.equalsIgnoreCase(Vocabulary.INPUT_FILE.name))
-                        inputFilename = tokens[++i].trim();
+                        params[Vocabulary.INPUT_FILE.i] = tokens[++i].trim();
 
                     else if (curToken.equalsIgnoreCase(Vocabulary.OUTPUT_FILE.name))
-                        outputFilename = tokens[++i].trim();
+                        params[Vocabulary.OUTPUT_FILE.i] = tokens[++i].trim();
 
                     else if (curToken.equalsIgnoreCase(Vocabulary.BUFFER_SIZE.name))
-                        bufferSize = Integer.parseInt(tokens[++i].trim());
+                        params[Vocabulary.BUFFER_SIZE.i] = tokens[++i].trim();
                 }
             }
+            return params;
         }
         catch (FileNotFoundException e) {
             System.out.println("Error: can not open config file");
         } catch (IOException e) {
             System.out.println("Error: can not read config file");
-        } catch (Exception e) {
-            System.out.println("Error: " + e);
         }
+        return null;
     }
 
-    private String configFilename;
-    private String inputFilename, outputFilename;
-    private int bufferSize = 0;
+    String configFilename;
 }

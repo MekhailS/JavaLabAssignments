@@ -4,37 +4,20 @@ import java.io.*;
 
 public class Reverser {
 
-    public Reverser(int bufferSize, String fileSource_s, String fileDest_s)
+    public Reverser(int bufferSize)
     {
         buffer = new byte[bufferSize];
-        fileSource = fileSource_s;
-        fileDest = fileDest_s;
     }
 
-    public void cloneEachReversedByteBuff()
+    public void cloneEachReversedByteBuff(ByteReader br, ByteWriter bw)
     {
-        try
+        int nBytesRead = 0;
+
+        while ((nBytesRead = br.Read(buffer, 0, buffer.length)) != -1)
         {
-            BufferedInputStream fis = new BufferedInputStream(new FileInputStream(fileSource));
-            BufferedOutputStream fos = new BufferedOutputStream(new FileOutputStream(fileDest));
+            reverseBitsInBuffer();
 
-            int nBytesRead = 0;
-
-            while ((nBytesRead = fis.read(buffer, 0, buffer.length)) != -1)
-            {
-                reverseBitsInBuffer();
-
-                fos.write(buffer, buffer.length - nBytesRead, nBytesRead);
-            }
-
-            fos.flush();
-            fis.close();
-            fos.close();
-        }
-        catch (FileNotFoundException e) {
-            System.out.println("Error: no files for reversing bits");
-        } catch (IOException e) {
-            System.out.println("Error: can not read/write from/to file");
+            bw.Write(buffer, buffer.length - nBytesRead, nBytesRead);
         }
     }
 
@@ -69,6 +52,4 @@ public class Reverser {
     }
 
     private byte[] buffer;
-    private String fileSource;
-    private String fileDest;
 }
