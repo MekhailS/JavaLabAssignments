@@ -1,11 +1,13 @@
 package com.mekhails.lab1;
 
+import java.util.logging.Level;
+
 public class Main
 {
     public static void main(String[] Args)
     {
         if (Args == null || Args.length == 0) {
-            System.out.println("Error: empty arguments of command prompt");
+            Log.LOGGER.log(Level.SEVERE, Log.ERROR.COMMAND_PROMPT.name);
             return;
         }
 
@@ -13,12 +15,7 @@ public class Main
 
         Manager mng = new Manager(configFilename);
 
-        mng.Run();
-
-        //Manager mng1 = new Manager("src/com/mekhails/lab1/config1.txt");
-        //Manager mng2 = new Manager("src/com/mekhails/lab1/config2.txt");
-
-        //mng1.Run();
-        //mng2.Run();
+        if (mng.isEverythingAvailable())
+            mng.Run();
     }
 }

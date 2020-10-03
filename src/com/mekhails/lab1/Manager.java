@@ -1,19 +1,22 @@
 package com.mekhails.lab1;
 
+import java.util.logging.Level;
+
 public class Manager {
 
     public Manager(String configFilename)
     {
         ConfigReader configReader = new ConfigReader(configFilename);
 
-        String[] params = configReader.readConfig();
+        String[] paramsConfig = configReader.readConfig();
 
-        paramsAnalyzer = new ParamsAnalyzer(params);
+        ParamsAnalyzer paramsAnalyzer = new ParamsAnalyzer(paramsConfig);
 
-        if (!paramsAnalyzer.AreParamsValid()){
-            System.out.println("Error: parameters in config file are not valid");
+        if (!paramsAnalyzer.AreParamsValid())
             return;
-        }
+
+        byteReader = new ByteReader(paramsAnalyzer.getInputStream(), -1);
+        byteWriter = new ByteWriter(paramsAnalyzer.getOutputStream(), -1);
 
         reverser = new Reverser(paramsAnalyzer.getBuffSize());
     }
@@ -22,24 +25,22 @@ public class Manager {
     {
         if (!isEverythingAvailable())
         {
-            System.out.println("Error has occurred while processing config file");
+            Log.LOGGER.log(Level.SEVERE, Log.ERROR.CONFIG.name);
             return;
         }
 
-        ByteReader br = new ByteReader(paramsAnalyzer.getInputStream(), -1);
-        ByteWriter bw = new ByteWriter(paramsAnalyzer.getOutputStream(), -1);
+        reverser.cloneEachReversedByteBuff(byteReader, byteWriter);
 
-        reverser.cloneEachReversedByteBuff(br, bw);
-
-        br.Close();
-        bw.Close();
+        byteReader.Close();
+        byteWriter.Close();
     }
 
-    private boolean isEverythingAvailable()
+    boolean isEverythingAvailable()
     {
-        return  ((paramsAnalyzer != null) && (reverser != null));
+        return  ((byteWriter != null) && (byteReader != null) && (reverser != null));
     }
 
-    private ParamsAnalyzer paramsAnalyzer;
+    private ByteWriter byteWriter;
+    private ByteReader byteReader;
     private Reverser reverser;
 }

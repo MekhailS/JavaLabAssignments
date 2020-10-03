@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
 
 public class ByteWriter {
 
@@ -22,7 +23,7 @@ public class ByteWriter {
         {
             bos.write(buffer, offset, lenToWrite);
         } catch (IOException e) {
-            System.out.println("Error: cannot write to output file");
+            Log.LOGGER.log(Level.SEVERE, Log.ERROR.WRITER.name);
         }
     }
 
@@ -33,7 +34,7 @@ public class ByteWriter {
             bos.flush();
             bos.close();
         } catch (IOException e) {
-            System.out.println("Error: error during closing output file");
+            Log.LOGGER.log(Level.SEVERE, Log.ERROR.WRITER.name);
         }
     }
 

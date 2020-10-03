@@ -2,8 +2,8 @@ package com.mekhails.lab1;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.logging.Level;
 
 public class ByteReader {
 
@@ -22,7 +22,7 @@ public class ByteReader {
             return bis.read(buffer, offset, lenToRead);
 
         } catch (IOException e) {
-            System.out.println("Error: cannot read from input file");;
+            Log.LOGGER.log(Level.SEVERE, Log.ERROR.READER.name);
         }
         return -1;
     }
@@ -33,7 +33,7 @@ public class ByteReader {
         {
             bis.close();
         } catch (IOException e) {
-            System.out.println("Error: error during closing input file");
+            Log.LOGGER.log(Level.SEVERE, Log.ERROR.READER.name);
         }
     }
 

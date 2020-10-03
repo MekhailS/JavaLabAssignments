@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.logging.Level;
 
 public class ConfigReader
 {
@@ -45,7 +46,7 @@ public class ConfigReader
                 String[] tokens = line.split(delimiter);
 
                 if (tokens.length != 2) {
-                    System.out.println("Error: Not correct config line format");
+                    Log.LOGGER.log(Level.SEVERE, Log.ERROR.CONFIG.name);
                     return null;
                 }
 
@@ -66,9 +67,9 @@ public class ConfigReader
             return params;
         }
         catch (FileNotFoundException e) {
-            System.out.println("Error: can not open config file");
+            Log.LOGGER.log(Level.SEVERE, Log.ERROR.CONFIG.name);
         } catch (IOException e) {
-            System.out.println("Error: can not read config file");
+            Log.LOGGER.log(Level.SEVERE, Log.ERROR.CONFIG.name);
         }
         return null;
     }
