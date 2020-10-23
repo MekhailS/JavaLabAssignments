@@ -1,0 +1,8 @@
+reader: src\com\mekhails\lab2\readerConfig.txt
+input file: src\com\mekhails\lab2\in.txt
+
+worker: reverser ; src\com\mekhails\lab2\reverserConfig.txt
+worker: reverser ; src\com\mekhails\lab2\reverserConfig2.txt
+
+writer: src\com\mekhails\lab2\writerConfig.txt
+output file: src\com\mekhails\lab2\out.txt

@@ -3,7 +3,6 @@ package com.mekhails.lab1;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.util.logging.Level;
 
 public class ParamsAnalyzer {
 
@@ -12,7 +11,7 @@ public class ParamsAnalyzer {
         {
             if (params.length != ConfigReader.numParameters)
             {
-                Log.LOGGER.log(Level.SEVERE, Log.ERROR.CONFIG.name);
+                System.out.println("Error: not enough parameters from config file");
                 return;
             }
 
@@ -20,13 +19,13 @@ public class ParamsAnalyzer {
             fos = new FileOutputStream(params[ConfigReader.Vocabulary.OUTPUT_FILE.i]);
             buffSize = Integer.parseInt(params[ConfigReader.Vocabulary.BUFFER_SIZE.i]);
         } catch (FileNotFoundException e) {
-            Log.LOGGER.log(Level.SEVERE, Log.ERROR.CONFIG.name);
+            System.out.println("Error: can not access input of output file");
         }
     }
 
     public boolean AreParamsValid()
     {
-        return !(buffSize <= 0 || fis == null || fos == null);
+        return (buffSize <= 0 || fis == null || fos == null);
     }
 
     public int getBuffSize() {
