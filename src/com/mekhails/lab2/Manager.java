@@ -9,7 +9,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.logging.Level;
 
 public class Manager {
@@ -19,7 +18,7 @@ public class Manager {
         READER("reader", SemanticAnalyzer.Semantic.READER),
         INPUT_FILE("input file", SemanticAnalyzer.Semantic.FILE_IN),
 
-        WORKER("worker", SemanticAnalyzer.Semantic.WORKER),
+        WORKER("worker", SemanticAnalyzer.Semantic.EXECUTOR),
 
         WRITER("writer", SemanticAnalyzer.Semantic.WRITER),
         OUTPUT_FILE("output file", SemanticAnalyzer.Semantic.FILE_OUT);
@@ -61,21 +60,25 @@ public class Manager {
                 switch (param)
                 {
                     case INPUT_FILE:
-                        reader.setInputStream((FileInputStream)paramValue);
+                        FileInputStream fis = (FileInputStream)paramValue;
+                        reader.setInputStream(fis);
                         break;
 
                     case OUTPUT_FILE:
-                        writer.setOutputStream((FileOutputStream)paramValue);
+                        FileOutputStream fos = (FileOutputStream)paramValue;
+                        writer.setOutputStream(fos);
                         break;
 
                     case READER:
-                        reader = new ByteReader();
-                        reader.setConfig((String)paramValue);
+                        Pair<IReader, String> readerAndConfig = (Pair<IReader, String>)paramValue;
+                        reader = readerAndConfig.getKey();
+                        reader.setConfig(readerAndConfig.getValue());
                         break;
 
                     case WRITER:
-                        writer = new ByteWriter();
-                        writer.setConfig((String)paramValue);
+                        Pair<IWriter, String> writerAndConfig = (Pair<IWriter, String>)paramValue;
+                        writer = writerAndConfig.getKey();
+                        writer.setConfig(writerAndConfig.getValue());
                         break;
 
                     case WORKER:

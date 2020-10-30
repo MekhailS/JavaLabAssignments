@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.logging.Level;
 
-public class ByteReader extends  Executor implements IReader {
+public class ByteReader extends Executor implements IReader {
 
     @Override
     public int setInputStream(FileInputStream fileInputStream)
@@ -32,8 +32,9 @@ public class ByteReader extends  Executor implements IReader {
             if (bytesRead == -1)
                 return 1;
 
-            byte[] bufferSliced = Arrays.copyOfRange(buffer, 0, bytesRead);
-            return consumer.execute(bufferSliced);
+            if (bytesRead != buffer.length)
+                buffer = Arrays.copyOfRange(buffer, 0, bytesRead);
+            return consumer.execute(buffer);
         }
         catch (IOException e) {
             Log.LOGGER.log(Level.SEVERE, Log.ERROR.READER.name);

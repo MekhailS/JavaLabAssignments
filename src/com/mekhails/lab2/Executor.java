@@ -22,20 +22,6 @@ public class Executor implements IExecutor {
     }
 
     @Override
-    public int setConsumer(Object o)
-    {
-        consumer = (IExecutor)o;
-        return 0;
-    }
-
-    @Override
-    public int setProducer(Object o)
-    {
-        producer = (IExecutor)o;
-        return 0;
-    }
-
-    @Override
     public int execute(Object o)
     {
         return 0;
@@ -89,6 +75,4 @@ public class Executor implements IExecutor {
     }
 
     protected int bufferSize;
-    protected IExecutor consumer;
-    protected IExecutor producer;
 }
