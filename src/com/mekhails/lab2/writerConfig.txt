@@ -1,1 +1,1 @@
-buffer size: 10
+buffer size: 2

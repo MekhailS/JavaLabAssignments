@@ -1,6 +1,8 @@
 package com.mekhails.lab2;
 
+import ru.spbstu.pipeline.IExecutable;
 import ru.spbstu.pipeline.IExecutor;
+import ru.spbstu.pipeline.RC;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -9,44 +11,45 @@ import java.util.logging.Level;
 
 public class Reverser implements IExecutor {
 
-    private enum VocabularyReverser {
-
-        NONE("default", SemanticAnalyzer.Semantic.EMPTY);
+    private enum VocabularyReverser implements IVocabularyConfig, IVocabularySemantic
+    {
+        REVERSING("enable reversing", SemanticAnalyzer.Semantic.BOOL);
 
         VocabularyReverser(String nameInConfig_, SemanticAnalyzer.Semantic semantic_)
         {nameInConfig = nameInConfig_; semantic = semantic_;}
 
+        public SemanticAnalyzer.Semantic getSemantic() { return semantic; }
+        public String getNameInConfig() { return nameInConfig; }
+
         public final String nameInConfig;
         public final SemanticAnalyzer.Semantic semantic;
-
     }
 
     @Override
-    public int execute(Object o)
+    public RC execute(byte[] buffer)
     {
-        byte[] buffer = (byte[])o;
-
-        reverseBitsInBuffer(buffer);
+        if (enableReversing)
+            reverseBitsInBuffer(buffer);
 
         return(consumer.execute(buffer));
     }
 
     @Override
-    public int setConsumer(Object o)
+    public RC setConsumer(IExecutable o)
     {
-        consumer = (IExecutor)o;
-        return 0;
+        consumer = o;
+        return RC.CODE_SUCCESS;
     }
 
     @Override
-    public int setProducer(Object o)
+    public RC setProducer(IExecutable o)
     {
-        producer = (IExecutor)o;
-        return 0;
+        producer = o;
+        return RC.CODE_SUCCESS;
     }
 
     @Override
-    public int setConfig(String s)
+    public RC setConfig(String s)
     {
         try
         {
@@ -55,39 +58,35 @@ public class Reverser implements IExecutor {
         }
         catch (FileNotFoundException e) {
             Log.LOGGER.log(Level.SEVERE, Log.ERROR.CONFIG.name);
+            return RC.CODE_INVALID_INPUT_STREAM;
         }
-        return 1;
     }
 
-    private int configure(FileInputStream cfgStream)
+    private RC configure(FileInputStream cfgStream)
     {
         VocabularyReverser[] params = VocabularyReverser.values();
 
-        String[] paramsNamesInConfig = new String[params.length];
-        for (int i = 0; i < params.length; i++)
-            paramsNamesInConfig[i] = params[i].nameInConfig;
+        ConfigReader configReader = ConfigReader.getConfigByVocabulary(params, cfgStream);
 
-        ConfigReader configReader = new ConfigReader(paramsNamesInConfig);
-        configReader.readConfig(cfgStream);
-
-        if (!configReader.isConfigValid())
-            return 1;
+        if (configReader == null)
+            return RC.CODE_CONFIG_GRAMMAR_ERROR;
 
         for (VocabularyReverser param: params)
         {
             ArrayList<String> paramName = configReader.getParameter(param.nameInConfig);
             Object paramValue = SemanticAnalyzer.parseParam(paramName, param.semantic);
 
-            if (paramValue == null)
-                return 1;
+            if (paramValue == null && param.semantic != SemanticAnalyzer.Semantic.EMPTY)
+                return RC.CODE_CONFIG_SEMANTIC_ERROR;
 
             switch (param)
             {
-                case NONE:
+                case REVERSING:
+                    enableReversing = (Boolean)paramValue;
                     break;
             }
         }
-        return 0;
+        return RC.CODE_CONFIG_SEMANTIC_ERROR;
     }
 
     private void reverseBitsInBuffer(byte[] buffer)
@@ -120,7 +119,7 @@ public class Reverser implements IExecutor {
         return res;
     }
 
-
-    private IExecutor consumer;
-    private IExecutor producer;
+    private IExecutable consumer;
+    private IExecutable producer;
+    boolean enableReversing;
 }

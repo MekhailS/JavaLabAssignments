@@ -1,20 +1,19 @@
 package com.mekhails.lab2;
 
 import javafx.util.Pair;
-import ru.spbstu.pipeline.IExecutor;
-import ru.spbstu.pipeline.IReader;
-import ru.spbstu.pipeline.IWriter;
+import ru.spbstu.pipeline.*;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 
 public class Manager {
 
-    private enum VocabularyManager {
-
+    private enum VocabularyManager implements IVocabularyConfig, IVocabularySemantic
+    {
         READER("reader", SemanticAnalyzer.Semantic.READER),
         INPUT_FILE("input file", SemanticAnalyzer.Semantic.FILE_IN),
 
@@ -26,47 +25,47 @@ public class Manager {
         VocabularyManager(String nameInConfig_, SemanticAnalyzer.Semantic semantic_)
             {nameInConfig = nameInConfig_; semantic = semantic_;}
 
-        public final String nameInConfig;
-        public final SemanticAnalyzer.Semantic semantic;
+        @Override
+        public SemanticAnalyzer.Semantic getSemantic() { return semantic; }
+        public String getNameInConfig() { return nameInConfig; }
 
+        private final String nameInConfig;
+        private final SemanticAnalyzer.Semantic semantic;
     }
 
-    public Manager(String configFilename)
+    public Manager(String configFilename_)
+    {
+        configFilename = configFilename_;
+    }
+
+    public RC configureAndConstructPipeline()
     {
         try
         {
             FileInputStream cfgStream = new FileInputStream(configFilename);
 
             VocabularyManager[] params = VocabularyManager.values();
+            ConfigReader configReader = ConfigReader.getConfigByVocabulary(params, cfgStream);
 
-            String[] paramsNamesInConfig = new String[params.length];
-            for (int i = 0; i < params.length; i++)
-                paramsNamesInConfig[i] = params[i].nameInConfig;
-
-            ConfigReader configReader = new ConfigReader(paramsNamesInConfig);
-            configReader.readConfig(cfgStream);
-
-            if (!configReader.isConfigValid())
-                return;
+            if (configReader == null)
+                return RC.CODE_CONFIG_GRAMMAR_ERROR;
 
             for (VocabularyManager param: params)
             {
                 ArrayList<String> paramName = configReader.getParameter(param.nameInConfig);
                 Object paramValue = SemanticAnalyzer.parseParam(paramName, param.semantic);
 
-                if (paramValue == null)
-                    return;
+                if (paramValue == null && param.semantic != SemanticAnalyzer.Semantic.EMPTY)
+                    return RC.CODE_CONFIG_SEMANTIC_ERROR;
 
                 switch (param)
                 {
                     case INPUT_FILE:
-                        FileInputStream fis = (FileInputStream)paramValue;
-                        reader.setInputStream(fis);
+                        inFilename = (String)paramValue;
                         break;
 
                     case OUTPUT_FILE:
-                        FileOutputStream fos = (FileOutputStream)paramValue;
-                        writer.setOutputStream(fos);
+                        outFilename = (String)paramValue;
                         break;
 
                     case READER:
@@ -84,6 +83,9 @@ public class Manager {
                     case WORKER:
                     {
                         Pair<IExecutor, String>[] workersAndFilesArr = (Pair<IExecutor, String>[])paramValue;
+                        if (workersAndFilesArr == null)
+                            return RC.CODE_CONFIG_SEMANTIC_ERROR;
+
                         executors = new IExecutor[workersAndFilesArr.length];
                         for (int i = 0; i<workersAndFilesArr.length; i++)
                         {
@@ -96,21 +98,42 @@ public class Manager {
                 }
             }
             if (!isEverythingAvailable())
-                return;
-            LinkEverything();
+                return RC.CODE_FAILED_PIPELINE_CONSTRUCTION;
 
+            return linkEverything();
         }
         catch (FileNotFoundException e) {
             Log.LOGGER.log(Level.SEVERE, Log.ERROR.CONFIG.name);
+            return RC.CODE_INVALID_INPUT_STREAM;
+        }
+        catch (NullPointerException e){
+            return RC.CODE_FAILED_PIPELINE_CONSTRUCTION;
         }
     }
 
-    public void Run()
+    public RC run()
     {
-        while(true)
+        try
         {
-            if (reader.execute(null) != 0)
-                return;
+            FileInputStream fis = new FileInputStream(inFilename);
+            FileOutputStream fos = new FileOutputStream(outFilename);
+
+            reader.setInputStream(fis);
+            writer.setOutputStream(fos);
+
+            RC code = reader.execute(null);
+
+            fis.close();
+            fos.close();
+
+            return code;
+        }
+        catch (FileNotFoundException e) {
+            Log.LOGGER.log(Level.SEVERE, Log.ERROR.CONFIG.name);
+            return RC.CODE_INVALID_INPUT_STREAM;
+        } catch (IOException e) {
+            Log.LOGGER.log(Level.SEVERE, Log.ERROR.WRITER.name);
+            return RC.CODE_INVALID_INPUT_STREAM;
         }
     }
 
@@ -119,27 +142,40 @@ public class Manager {
         return  ((reader != null) && (writer != null) && (executors != null));
     }
 
-    private int LinkEverything()
+    private RC linkEverything()
     {
-        IExecutor[] executorsWReaderAndWriter = new IExecutor[1 + executors.length + 1];
-        executorsWReaderAndWriter[0] = reader;
-        System.arraycopy(executors, 0, executorsWReaderAndWriter, 1, executors.length);
-        executorsWReaderAndWriter[executorsWReaderAndWriter.length - 1] = writer;
+        IPipelineStep[] pipelineSteps = new IPipelineStep[1 + executors.length + 1];
+        pipelineSteps[0] = reader;
+        System.arraycopy(executors, 0, pipelineSteps, 1, executors.length);
+        pipelineSteps[pipelineSteps.length - 1] = writer;
 
-        for (int i = 0; i < executorsWReaderAndWriter.length; i++)
+        RC code = RC.CODE_SUCCESS;
+
+        for (int i = 0; i < pipelineSteps.length; i++)
         {
-            IExecutor executor = executorsWReaderAndWriter[i];
-            executor.setConsumer(reader);
+            IPipelineStep step = pipelineSteps[i];
             if (i > 0)
-                executor.setProducer(executorsWReaderAndWriter[i-1]);
-            if (i < executorsWReaderAndWriter.length - 1)
-                executor.setConsumer(executorsWReaderAndWriter[i+1]);
+            {
+                code = step.setProducer(pipelineSteps[i - 1]);
+                if (code != RC.CODE_SUCCESS)
+                    return code;
+            }
+            if (i < pipelineSteps.length - 1)
+            {
+                code = step.setConsumer(pipelineSteps[i + 1]);
+                if (code != RC.CODE_SUCCESS)
+                    return code;
+            }
 
         }
-        return 0;
+        return RC.CODE_SUCCESS;
     }
 
     private IReader reader;
     private IWriter writer;
     private IExecutor[] executors;
+
+    private String inFilename;
+    private String outFilename;
+    private String configFilename;
 }

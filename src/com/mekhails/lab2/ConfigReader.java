@@ -10,9 +10,25 @@ public class ConfigReader
 {
     final static String delimiter = ":";
 
-    public ConfigReader(String[] allowedConfigParamsNames_) { allowedConfigParamsNames = allowedConfigParamsNames_; }
+    public static ConfigReader getConfigByVocabulary(IVocabularyConfig[] params, FileInputStream cfgStream)
+    {
+        String[] paramsNamesInConfig = new String[params.length];
+        for (int i = 0; i<params.length; i++)
+            paramsNamesInConfig[i] = params[i].getNameInConfig();
 
-    public boolean readConfig(FileInputStream cfgStream)
+        ConfigReader configReader = new ConfigReader(paramsNamesInConfig);
+        if (!configReader.readConfig(cfgStream))
+            return null;
+
+        if (!configReader.isConfigValid())
+            return null;
+
+        return configReader;
+    }
+
+    private ConfigReader(String[] allowedConfigParamsNames_) { allowedConfigParamsNames = allowedConfigParamsNames_; }
+
+    private boolean readConfig(FileInputStream cfgStream)
     {
         try
         {
@@ -45,7 +61,7 @@ public class ConfigReader
                         }
                         else
                         {
-                            ArrayList<String> parameterNames = new ArrayList<String>();
+                            ArrayList<String> parameterNames = new ArrayList<>();
                             parameterNames.add(tokens[++i].trim());
 
                             params.put(curToken, parameterNames);
@@ -56,9 +72,6 @@ public class ConfigReader
             if (params.size() != allowedConfigParamsNames.length)
                 return false;
             return true;
-        }
-        catch (FileNotFoundException e) {
-            Log.LOGGER.log(Level.SEVERE, Log.ERROR.CONFIG.name);
         } catch (IOException e) {
             Log.LOGGER.log(Level.SEVERE, Log.ERROR.CONFIG.name);
         }
