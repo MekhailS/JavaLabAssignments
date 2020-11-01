@@ -11,7 +11,7 @@ public class Main
 
         String configFilename = Args[0];*/
 
-        String configFilename = "src\\com\\mekhails\\lab2alt\\lab2\\managerConfig.txt";
+        String configFilename = "src\\com\\mekhails\\lab2alt\\lab2\\config\\managerConfig.txt";
 
         Manager mng = new Manager(configFilename);
 

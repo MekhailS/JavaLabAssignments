@@ -1,8 +1,0 @@
-reader: com.mekhails.lab2alt.lab2.ByteReader ; src\com\mekhails\lab2alt\lab2\readerConfig.txt
-input file: src\com\mekhails\lab2alt\lab2\in.txt
-
-worker: com.mekhails.lab2alt.lab2.Reverser ; src\com\mekhails\lab2alt\lab2\reverserConfig.txt
-worker: com.mekhails.lab2alt.lab2.Reverser ; src\com\mekhails\lab2alt\lab2\reverserConfig2.txt
-
-writer: com.mekhails.lab2alt.lab2.ByteWriter ; src\com\mekhails\lab2alt\lab2\writerConfig.txt
-output file: src\com\mekhails\lab2alt\lab2\out.txt

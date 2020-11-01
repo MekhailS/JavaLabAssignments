@@ -93,7 +93,7 @@ class Manager extends AConfigurable {
         {
             FileInputStream cfgStream = new FileInputStream(configFilename);
 
-            RC code = configure(cfgStream);
+            code = configure(cfgStream);
 
             if (code != RC.CODE_SUCCESS)
                 return code;
@@ -101,14 +101,14 @@ class Manager extends AConfigurable {
             if (!isEverythingAvailable())
                 return RC.CODE_FAILED_PIPELINE_CONSTRUCTION;
 
-            return linkEverything();
+            code = linkEverything();
         }
         catch (FileNotFoundException e) {
             Log.LOGGER.log(Level.SEVERE, Log.ERROR.CONFIG.name);
-            return RC.CODE_INVALID_INPUT_STREAM;
+            code = RC.CODE_FAILED_PIPELINE_CONSTRUCTION;
         }
-        catch (NullPointerException e){
-            return RC.CODE_FAILED_PIPELINE_CONSTRUCTION;
+        finally {
+            return code;
         }
     }
 
@@ -116,6 +116,9 @@ class Manager extends AConfigurable {
     {
         try
         {
+            if (!isEverythingAvailable())
+                return RC.CODE_FAILED_PIPELINE_CONSTRUCTION;
+
             FileInputStream fis = new FileInputStream(inFilename);
             FileOutputStream fos = new FileOutputStream(outFilename);
 
@@ -140,7 +143,7 @@ class Manager extends AConfigurable {
 
     boolean isEverythingAvailable()
     {
-        return  ((reader != null) && (writer != null) && (executors != null));
+        return  ((reader != null) && (writer != null) && (executors != null) && code == RC.CODE_SUCCESS);
     }
 
     private RC linkEverything()
@@ -171,6 +174,8 @@ class Manager extends AConfigurable {
         }
         return RC.CODE_SUCCESS;
     }
+
+    private RC code = RC.CODE_SUCCESS;
 
     private IReader reader;
     private IWriter writer;
