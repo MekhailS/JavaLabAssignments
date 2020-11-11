@@ -4,6 +4,7 @@ import ru.spbstu.pipeline.RC;
 
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 
 
 /**
@@ -23,7 +24,7 @@ abstract class AConfigurable
      * @param cfgStream stream of config file
      * @return RC
      */
-    protected RC configure(FileInputStream cfgStream)
+    protected RC configure(FileInputStream cfgStream, Logger logger)
     {
         LexemeAndRule[] vocabularyAndRules = setOfRulesForVocabulary();
 
@@ -35,12 +36,12 @@ abstract class AConfigurable
         }
 
         // Create configReader (all config tokens are parsed) with vocabulary
-        ConfigReader configReader = ConfigReader.getConfigByVocabulary(vocabulary, cfgStream);
+        ConfigReader configReader = ConfigReader.getConfigByVocabulary(vocabulary, cfgStream, logger);
 
         if (configReader == null)
             return RC.CODE_CONFIG_GRAMMAR_ERROR;
 
-        return (validateSemanticAndApplyRules(configReader, vocabularyAndRules));
+        return validateSemanticAndApplyRules(configReader, vocabularyAndRules, logger);
     }
 
     /**
@@ -49,7 +50,7 @@ abstract class AConfigurable
      * @param vocabularyAndRules array of 'pairs' lexeme-rule
      * @return RC
      */
-    private static RC validateSemanticAndApplyRules(ConfigReader configReader, LexemeAndRule[] vocabularyAndRules)
+    private static RC validateSemanticAndApplyRules(ConfigReader configReader, LexemeAndRule[] vocabularyAndRules, Logger logger)
     {
         for (LexemeAndRule lexemeAndRule : vocabularyAndRules)
         {
@@ -60,7 +61,7 @@ abstract class AConfigurable
             ArrayList<String> paramValAsString = configReader.getParameter(lexeme.getNameInConfig());
 
             // Do semantic validation and get semantically parsed paramValue
-            Object paramValue = SemanticAnalyzer.parseParam(paramValAsString, lexeme.getSemantic());
+            Object paramValue = SemanticAnalyzer.parseParam(paramValAsString, lexeme.getSemantic(), logger);
 
             if (paramValue == null && lexeme.getSemantic() != SemanticAnalyzer.Semantic.EMPTY)
                 return RC.CODE_CONFIG_SEMANTIC_ERROR;

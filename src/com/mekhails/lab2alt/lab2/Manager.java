@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 class Manager extends AConfigurable {
 
@@ -35,9 +36,9 @@ class Manager extends AConfigurable {
         private final SemanticAnalyzer.Semantic semantic;
     }
 
-    Manager(String configFilename_)
+    Manager(String configFilename_, Logger logger_)
     {
-        configFilename = configFilename_;
+        configFilename = configFilename_; logger = logger_;
     }
 
     @Override
@@ -93,7 +94,7 @@ class Manager extends AConfigurable {
         {
             FileInputStream cfgStream = new FileInputStream(configFilename);
 
-            code = configure(cfgStream);
+            code = configure(cfgStream, logger);
 
             if (code != RC.CODE_SUCCESS)
                 return code;
@@ -104,7 +105,7 @@ class Manager extends AConfigurable {
             code = linkEverything();
         }
         catch (FileNotFoundException e) {
-            Log.LOGGER.log(Level.SEVERE, Log.ERROR.CONFIG.name);
+            logger.log(Level.SEVERE, Log.ERROR.CONFIG.name);
             code = RC.CODE_FAILED_PIPELINE_CONSTRUCTION;
         }
         finally {
@@ -133,10 +134,10 @@ class Manager extends AConfigurable {
             return code;
         }
         catch (FileNotFoundException e) {
-            Log.LOGGER.log(Level.SEVERE, Log.ERROR.CONFIG.name);
+            logger.log(Level.SEVERE, Log.ERROR.CONFIG.name);
             return RC.CODE_INVALID_INPUT_STREAM;
         } catch (IOException e) {
-            Log.LOGGER.log(Level.SEVERE, Log.ERROR.WRITER.name);
+            logger.log(Level.SEVERE, Log.ERROR.WRITER.name);
             return RC.CODE_INVALID_INPUT_STREAM;
         }
     }
@@ -184,4 +185,6 @@ class Manager extends AConfigurable {
     private String inFilename;
     private String outFilename;
     private String configFilename;
+
+    private final Logger logger;
 }

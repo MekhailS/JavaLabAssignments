@@ -10,6 +10,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 class SemanticAnalyzer {
 
@@ -27,7 +28,7 @@ class SemanticAnalyzer {
         EXECUTOR
     }
 
-    static Object parseParam(ArrayList<String> paramAsString, Semantic parameterSemantic)
+    static Object parseParam(ArrayList<String> paramAsString, Semantic parameterSemantic, Logger logger)
     {
         try
         {
@@ -94,8 +95,8 @@ class SemanticAnalyzer {
 
                     String className = tokens[0].trim();
                     Class<?> writerClass = Class.forName(className);
-                    Constructor<?> writerConstructor = writerClass.getConstructor(null);
-                    IWriter writer = (IWriter) writerConstructor.newInstance(null);
+                    Constructor<?> writerConstructor = writerClass.getConstructor(Logger.class);
+                    IWriter writer = (IWriter) writerConstructor.newInstance(logger);
 
                     res = new Pair<IWriter, String>(writer, cfgFilename);
                     break;
@@ -112,8 +113,8 @@ class SemanticAnalyzer {
 
                     String className = tokens[0].trim();
                     Class<?> readerClass = Class.forName(className);
-                    Constructor<?> readerConstructor = readerClass.getConstructor(null);
-                    IReader reader = (IReader) readerConstructor.newInstance(null);
+                    Constructor<?> readerConstructor = readerClass.getConstructor(Logger.class);
+                    IReader reader = (IReader) readerConstructor.newInstance(logger);
 
                     res = new Pair<IReader, String>(reader, cfgFilename);
                     break;
@@ -130,8 +131,8 @@ class SemanticAnalyzer {
 
                         String className = tokens[0].trim();
                         Class<?> executorClass = Class.forName(className);
-                        Constructor<?> executorConstructor = executorClass.getConstructor(null);
-                        IExecutor executor = (IExecutor) executorConstructor.newInstance(null);
+                        Constructor<?> executorConstructor = executorClass.getConstructor(Logger.class);
+                        IExecutor executor = (IExecutor) executorConstructor.newInstance(logger);
 
                         File cfgFile = new File(cfgFilename);
 
@@ -148,7 +149,7 @@ class SemanticAnalyzer {
         }
         catch (ClassNotFoundException | NoSuchMethodException
                 | IllegalAccessException | InstantiationException | InvocationTargetException e) {
-            Log.LOGGER.log(Level.SEVERE, Log.ERROR.CONFIG.name);
+            logger.log(Level.SEVERE, Log.ERROR.CONFIG.name);
         }
         return null;
     }

@@ -1,11 +1,16 @@
 package com.mekhails.lab2alt.lab2;
 
+import java.util.logging.Logger;
+
 public class Main
 {
     public static void main(String[] Args)
     {
+
+        Logger logger = Logger.getLogger("pipeline");
+
         /*if (Args == null || Args.length == 0) {
-            Log.LOGGER.log(Level.SEVERE, Log.ERROR.COMMAND_PROMPT.name);
+            logger.log(Level.SEVERE, Log.ERROR.COMMAND_PROMPT.name);
             return;
         }
 
@@ -13,7 +18,7 @@ public class Main
 
         String configFilename = "src\\com\\mekhails\\lab2alt\\lab2\\config\\managerConfig.txt";
 
-        Manager mng = new Manager(configFilename);
+        Manager mng = new Manager(configFilename, logger);
 
         mng.configureAndConstructPipeline();
 

@@ -45,7 +45,7 @@ public class Manager {
             FileInputStream cfgStream = new FileInputStream(configFilename);
 
             VocabularyManager[] params = VocabularyManager.values();
-            ConfigReader configReader = ConfigReader.getConfigByVocabulary(params, cfgStream);
+            ConfigReader configReader = ConfigReader.getConfigByVocabulary(params);
 
             if (configReader == null)
                 return RC.CODE_CONFIG_GRAMMAR_ERROR;

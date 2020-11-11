@@ -10,6 +10,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ByteReader extends AConfigurable implements IReader {
 
@@ -75,7 +76,7 @@ public class ByteReader extends AConfigurable implements IReader {
             }
         }
         catch (IOException e) {
-            Log.LOGGER.log(Level.SEVERE, Log.ERROR.READER.name);
+            logger.log(Level.SEVERE, Log.ERROR.READER.name);
             return RC.CODE_FAILED_TO_READ;
         }
     }
@@ -97,16 +98,22 @@ public class ByteReader extends AConfigurable implements IReader {
         {
             FileInputStream cfgStream = new FileInputStream(s);
 
-            return configure(cfgStream);
+            return configure(cfgStream, logger);
         }
         catch (FileNotFoundException e) {
-            Log.LOGGER.log(Level.SEVERE, Log.ERROR.CONFIG.name);
+            logger.log(Level.SEVERE, Log.ERROR.CONFIG.name);
             return RC.CODE_INVALID_INPUT_STREAM;
         }
     }
+
+
+    public ByteReader(Logger logger_)
+        {logger = logger_;}
 
     private int bufferSize;
     private IExecutable consumer;
 
     private BufferedInputStream bis;
+
+    private final Logger logger;
 }

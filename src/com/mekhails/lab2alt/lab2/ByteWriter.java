@@ -6,6 +6,7 @@ import ru.spbstu.pipeline.RC;
 
 import java.io.*;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ByteWriter extends AConfigurable implements IWriter {
 
@@ -64,7 +65,7 @@ public class ByteWriter extends AConfigurable implements IWriter {
             return RC.CODE_SUCCESS;
         }
         catch (IOException e) {
-            Log.LOGGER.log(Level.SEVERE, Log.ERROR.WRITER.name);
+            logger.log(Level.SEVERE, Log.ERROR.WRITER.name);
             return RC.CODE_FAILED_TO_WRITE;
         }
     }
@@ -86,16 +87,21 @@ public class ByteWriter extends AConfigurable implements IWriter {
         {
             FileInputStream cfgStream = new FileInputStream(s);
 
-            return configure(cfgStream);
+            return configure(cfgStream, logger);
         }
         catch (FileNotFoundException e) {
-            Log.LOGGER.log(Level.SEVERE, Log.ERROR.CONFIG.name);
+            logger.log(Level.SEVERE, Log.ERROR.CONFIG.name);
             return RC.CODE_INVALID_INPUT_STREAM;
         }
     }
+
+    public ByteWriter(Logger logger_)
+        {logger = logger_;}
 
     private int bufferSize;
     private IExecutable producer;
 
     private BufferedOutputStream bos;
+
+    private final Logger logger;
 }

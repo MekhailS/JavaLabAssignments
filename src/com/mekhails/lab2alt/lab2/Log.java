@@ -14,6 +14,4 @@ class Log {
 
         public final String name;
     }
-
-    public final static Logger LOGGER = Logger.getLogger("Pipeline");
 }

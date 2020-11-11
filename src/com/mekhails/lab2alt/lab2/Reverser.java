@@ -7,6 +7,7 @@ import ru.spbstu.pipeline.RC;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Reverser extends AConfigurable implements IExecutor {
 
@@ -71,13 +72,16 @@ public class Reverser extends AConfigurable implements IExecutor {
         {
             FileInputStream cfgStream = new FileInputStream(s);
 
-            return configure(cfgStream);
+            return configure(cfgStream, logger);
         }
         catch (FileNotFoundException e) {
-            Log.LOGGER.log(Level.SEVERE, Log.ERROR.CONFIG.name);
+            logger.log(Level.SEVERE, Log.ERROR.CONFIG.name);
             return RC.CODE_INVALID_INPUT_STREAM;
         }
     }
+
+    public Reverser(Logger logger_)
+        {logger = logger_;}
 
     private void reverseBitsInBuffer(byte[] buffer)
     {
@@ -112,4 +116,6 @@ public class Reverser extends AConfigurable implements IExecutor {
     private IExecutable consumer;
     private IExecutable producer;
     boolean enableReversing;
+
+    private final Logger logger;
 }

@@ -5,18 +5,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ConfigReader
 {
     final static String delimiter = ":";
 
-    public static ConfigReader getConfigByVocabulary(IVocabularyConfig[] params, FileInputStream cfgStream)
+    public static ConfigReader getConfigByVocabulary(IVocabularyConfig[] params, FileInputStream cfgStream, Logger logger)
     {
         String[] paramsNamesInConfig = new String[params.length];
         for (int i = 0; i<params.length; i++)
             paramsNamesInConfig[i] = params[i].getNameInConfig();
 
-        ConfigReader configReader = new ConfigReader(paramsNamesInConfig);
+        ConfigReader configReader = new ConfigReader(paramsNamesInConfig, logger);
         if (!configReader.readConfig(cfgStream))
             return null;
 
@@ -26,7 +27,8 @@ public class ConfigReader
         return configReader;
     }
 
-    private ConfigReader(String[] allowedConfigParamsNames_) { allowedConfigParamsNames = allowedConfigParamsNames_; }
+    private ConfigReader(String[] allowedConfigParamsNames_, Logger logger_)
+        { allowedConfigParamsNames = allowedConfigParamsNames_; logger = logger_;}
 
     private boolean readConfig(FileInputStream cfgStream)
     {
@@ -90,4 +92,6 @@ public class ConfigReader
 
     private HashMap<String, ArrayList<String>> params = new HashMap<>();
     private String[] allowedConfigParamsNames;
+
+    private Logger logger;
 }

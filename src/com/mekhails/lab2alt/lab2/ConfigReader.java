@@ -8,18 +8,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 class ConfigReader
 {
     final static String delimiter = ":";
 
-    static ConfigReader getConfigByVocabulary(ILexemeConfig[] params, FileInputStream cfgStream)
+    static ConfigReader getConfigByVocabulary(ILexemeConfig[] params, FileInputStream cfgStream, Logger logger)
     {
         String[] paramsNamesInConfig = new String[params.length];
         for (int i = 0; i<params.length; i++)
             paramsNamesInConfig[i] = params[i].getNameInConfig();
 
-        ConfigReader configReader = new ConfigReader(paramsNamesInConfig);
+        ConfigReader configReader = new ConfigReader(paramsNamesInConfig, logger);
         if (!configReader.readConfig(cfgStream))
             return null;
 
@@ -34,14 +35,12 @@ class ConfigReader
         return (params != null && allowedConfigParamsNames != null && params.size() == allowedConfigParamsNames.length);
     }
 
-    ArrayList<String> getParameter(String parameterName)
-    {
-        return params.get(parameterName);
-    }
+    ArrayList<String> getParameter(String parameterName) { return params.get(parameterName); }
 
-    private ConfigReader(String[] allowedConfigParamsNames_)
+    private ConfigReader(String[] allowedConfigParamsNames_, Logger logger_)
     {
         allowedConfigParamsNames = allowedConfigParamsNames_;
+        logger = logger_;
     }
 
     private boolean readConfig(FileInputStream cfgStream)
@@ -60,7 +59,7 @@ class ConfigReader
                 String[] tokens = line.split(delimiter);
 
                 if (tokens.length < 2) {
-                    Log.LOGGER.log(Level.SEVERE, Log.ERROR.CONFIG.name);
+                    logger.log(Level.SEVERE, Log.ERROR.CONFIG.name);
                     return false;
                 }
 
@@ -89,11 +88,13 @@ class ConfigReader
                 return false;
             return true;
         } catch (IOException e) {
-            Log.LOGGER.log(Level.SEVERE, Log.ERROR.CONFIG.name);
+            logger.log(Level.SEVERE, Log.ERROR.CONFIG.name);
         }
         return false;
     }
 
     private HashMap<String, ArrayList<String>> params = new HashMap<>();
     private String[] allowedConfigParamsNames;
+
+    private final Logger logger;
 }
